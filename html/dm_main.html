@@ -1,0 +1,685 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>dm_main</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-01-31"><meta name="DC.source" content="dm_main.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="comment">% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %</span>
+<span class="comment">%               CSE 572: Data Mining - Assignment 1                       %</span>
+<span class="comment">%                           Group 3                                       %</span>
+<span class="comment">% Pratik Bartakke, Vihar Bhatt, Venkata Sai Sandeep Nadella, Darsh Parikh %</span>
+<span class="comment">% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %</span>
+
+<span class="comment">% Clearing all data from previous runs</span>
+clc
+clear
+close <span class="string">all</span>
+
+f = waitbar(0,<span class="string">'Please wait...'</span>);
+pause(.5)
+
+<span class="comment">% Expects the dataset to be present at the root of current working directory.</span>
+<span class="comment">% Note: The 'user9' folder under 'groundTruth' folder has been renamed to</span>
+<span class="comment">% 'user09' to maintain consistency with 'user09' folder under 'MyoData'</span>
+<span class="comment">% folder</span>
+<span class="comment">% ./</span>
+<span class="comment">% |-- Data_Mining/</span>
+<span class="comment">% |   |-- groundTruth/</span>
+<span class="comment">% |   |-- MyoData/</span>
+<span class="comment">% |   |-- DataMining_project_help.docx</span>
+<span class="comment">% |-- dm_main.m</span>
+
+addpath(genpath(pwd));  <span class="comment">% Adding all the folders and subfolders of the current working directory to the work path</span>
+
+<span class="comment">% Reading the sample dataset</span>
+waitbar(.33,f,<span class="string">'Loading the data'</span>);
+pause(1)
+fork_list = dir(<span class="string">'Data_Mining/MyoData/*/fork/*'</span>);
+fork_list = fork_list(~ismember({fork_list.name},{<span class="string">'.'</span>,<span class="string">'..'</span>}));
+spoon_list = dir(<span class="string">'Data_Mining/MyoData/*/spoon/*'</span>);
+spoon_list = spoon_list(~ismember({spoon_list.name},{<span class="string">'.'</span>,<span class="string">'..'</span>}));
+ground_truth_fork_list  = dir(<span class="string">'Data_Mining/groundTruth/*/fork/*.txt'</span>);
+ground_truth_spoon_list  = dir(<span class="string">'Data_Mining/groundTruth/*/spoon/*.txt'</span>);
+samples_matrix = [];    <span class="comment">% Used for storing the entire sample data set after data cleaning</span>
+
+waitbar(.40,f,<span class="string">'Verifying the data'</span>);
+pause(1)
+
+<span class="keyword">if</span> size(fork_list,1)~=(size(spoon_list,1))
+    throw(MException(<span class="string">'DM:DatasetMismatch'</span>, <span class="string">'The number of fork and spoon eating action entries are not the same'</span>));
+<span class="keyword">end</span>
+
+<span class="keyword">if</span> size(fork_list,1)/3~=size(ground_truth_fork_list,1)
+    throw(MException(<span class="string">'DM:DatasetMismatch'</span>, <span class="string">'The number of eating actions and ground truth label entries are not the same'</span>));
+<span class="keyword">end</span>
+
+<span class="keyword">if</span> size(ground_truth_fork_list,1)~=size(ground_truth_spoon_list,1)
+    throw(MException(<span class="string">'DM:DatasetMismatch'</span>, <span class="string">'The number of ground truth labels for spoon and fork entries are not the same'</span>));
+<span class="keyword">end</span>
+
+num_users  = size(ground_truth_fork_list,1);
+
+<span class="comment">% The OOTB code only runs on fork dataset. Can be tweaked based on need to</span>
+<span class="comment">% run on spoon dataset as well.</span>
+waitbar(.45,f,<span class="string">'Organizing data'</span>);
+pause(1)
+<span class="keyword">for</span> i = 1:num_users
+
+    path_split  = strsplit(ground_truth_fork_list(i).folder, <span class="string">'/'</span>);
+    user  = path_split{end-1};  <span class="comment">% contains the current user for which the data is being processed</span>
+    ground_truth_fork_data = csvread(ground_truth_fork_list(i).name);
+
+    imu_fork_data = [];
+    emg_fork_data = [];
+    video_info_fork_data = [];
+
+    <span class="comment">%     Populate the dataset for current user</span>
+    <span class="keyword">for</span> j=1:size(fork_list,1)
+        <span class="keyword">if</span> contains(fork_list(j).folder, user) &amp;&amp; contains(fork_list(j).name,<span class="string">"IMU"</span>)
+            imu_fork_data = csvread(fork_list(j).name);
+        <span class="keyword">elseif</span> contains(fork_list(j).folder, user) &amp;&amp; contains(fork_list(j).name,<span class="string">"EMG"</span>)
+            emg_fork_data = csvread(fork_list(j).name);
+        <span class="keyword">elseif</span> contains(fork_list(j).folder, user) &amp;&amp; contains(fork_list(j).name,<span class="string">"video_info"</span>)
+            video_info_fork_data = csvread(fork_list(j).name);
+        <span class="keyword">end</span>
+        <span class="keyword">if</span> isempty(imu_fork_data) || isempty(emg_fork_data) || isempty(video_info_fork_data)
+            <span class="keyword">continue</span>;
+        <span class="keyword">else</span>
+            <span class="keyword">break</span>;
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    <span class="comment">% Get the time axis of the video recording</span>
+    video_time_axis = linspace(max(imu_fork_data(1,1), emg_fork_data(1,1)),min(imu_fork_data(end,1), emg_fork_data(end,1)),(ground_truth_fork_data(end,2)-ground_truth_fork_data(1,1)+1));
+    <span class="comment">% Get the ground truth axis</span>
+    gt_time_axis = linspace(min(imu_fork_data(end,1), emg_fork_data(end,1))-(ground_truth_fork_data(end,2)*(1000/30)),min(imu_fork_data(end,1), emg_fork_data(end,1)),ground_truth_fork_data(end,2));
+
+    gt_label = zeros(1,ground_truth_fork_data(end,2)); <span class="comment">% the indices indicate ground truth frame axis</span>
+    <span class="keyword">for</span> s=1:size(ground_truth_fork_data,1)
+        <span class="keyword">for</span> h = 1:length(gt_label)
+            <span class="keyword">if</span> h&gt;=ground_truth_fork_data(s,1) &amp;&amp; h&lt;=ground_truth_fork_data(s,2)
+                gt_label(1,h)=1; <span class="comment">% Indicate it as eating frame</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    imu_fork_time = imu_fork_data(:,1);
+    emg_fork_time = emg_fork_data(:,1);
+
+    <span class="comment">%     interpolate the IMU fork data to a common video time axis to combine</span>
+    <span class="comment">%     IMU, EMG and GroundTruth data</span>
+    interpolated_fork_data = [];
+    interpolated_imu_data = [];
+    interpolated_emg_data = [];
+    interpolated_gt_data = [];
+    interpolated_fork_data_cleaned = [];
+
+    <span class="keyword">for</span> k = 2:11    <span class="comment">% there are 18 sensors in the given dataset</span>
+        interpolated_imu_data = vertcat(interpolated_imu_data,interp1(imu_fork_time, imu_fork_data(:,k), video_time_axis, <span class="string">'linear'</span>));
+        <span class="keyword">if</span> k~=10 &amp;&amp; k~=11
+            interpolated_emg_data = vertcat(interpolated_emg_data,interp1(emg_fork_time, emg_fork_data(:,k), video_time_axis, <span class="string">'linear'</span>));
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    interpolated_gt_data = interp1(gt_time_axis, gt_label, video_time_axis, <span class="string">'linear'</span>);
+    interpolated_fork_data = vertcat(interpolated_gt_data, interpolated_imu_data, interpolated_emg_data);
+    interpolated_fork_data = vertcat(repmat(str2num(strrep(user,<span class="string">'user'</span>,<span class="string">''</span>)),1,length(video_time_axis)), video_time_axis, interpolated_fork_data);
+
+    <span class="keyword">for</span> g = 1:size(interpolated_fork_data, 2)
+        <span class="keyword">if</span> (interpolated_fork_data(3,g)==1||interpolated_fork_data(3,g)==0)
+            interpolated_fork_data_cleaned = [interpolated_fork_data_cleaned interpolated_fork_data(:,g)];
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    <span class="comment">% concatenate and store the data corresponding to each user along</span>
+    <span class="comment">% with timestamps across all users in the samples_matrix</span>
+    samples_matrix = [samples_matrix interpolated_fork_data_cleaned];
+
+<span class="keyword">end</span>
+
+clearvars <span class="string">-except</span> <span class="string">f</span> <span class="string">samples_matrix</span>
+
+
+feature_eat_matrix = [];
+feature_noneat_matrix = [];
+
+prev = 0;
+curr=0;
+t_mat = [];
+
+<span class="comment">% Compute the feature matrix. 6 features were considered for this</span>
+<span class="comment">% assignment. 'mean', 'max', 'rms', 'std', 'entropy', 'power'</span>
+waitbar(.50,f,<span class="string">'Extracting features'</span>);
+pause(1)
+<span class="keyword">for</span> i = 1:size(samples_matrix,2)
+    curr = samples_matrix(3,i);
+    <span class="keyword">if</span> (curr == 0 &amp;&amp; prev == 0) || (curr==1 &amp;&amp; prev==1)
+        t_mat = [t_mat samples_matrix(4:end,i)];
+    <span class="keyword">elseif</span> curr==0 &amp;&amp; prev==1
+        fft_feature = abs(fft(t_mat,[],2));
+        power = fft_feature.*conj(fft_feature)/size(t_mat,2);
+        total_power = sum(power,2);
+
+        p=power;
+        p=p/sum(p+ 1e-12);
+        logd = log2(p + 1e-12);
+        entropy = -sum(p.*logd,2)/log2(length(p));
+
+        t_mat = vertcat(mean(t_mat,2), max(t_mat,[],2), rms(t_mat,2), std(t_mat,[],2), entropy, total_power);
+        feature_eat_matrix = [feature_eat_matrix t_mat];
+        t_mat=samples_matrix(4:end,i);
+    <span class="keyword">else</span>
+        fft_feature = abs(fft(t_mat,[],2));
+        power = fft_feature.*conj(fft_feature)/size(t_mat,2);
+        total_power = sum(power,2);
+
+        p=power;
+        p=p/sum(p+ 1e-12);
+        logd = log2(p + 1e-12);
+        entropy = -sum(p.*logd,2)/log2(length(p));
+
+        t_mat = vertcat(mean(t_mat,2), max(t_mat,[],2), rms(t_mat,2), std(t_mat,[],2), entropy, total_power);
+        feature_noneat_matrix = [feature_noneat_matrix t_mat];
+        t_mat=samples_matrix(4:end,i);
+    <span class="keyword">end</span>
+    prev=curr;
+<span class="keyword">end</span>
+row_labels = {<span class="string">'OrientationX mean'</span>,<span class="string">'OrientationY mean'</span>,<span class="string">'OrientationZ mean'</span>,<span class="string">'OrientationW mean'</span>,<span class="string">'AccelerometerX mean'</span>,<span class="string">'AccelerometerY mean'</span>,<span class="string">'AccelerometerZ mean'</span>,<span class="string">'GyroscopeX mean'</span>,<span class="string">'GyroscopeY mean'</span>,<span class="string">'GyroscopeZ mean'</span>,<span class="string">'EMG1 mean'</span>,<span class="string">'EMG2 mean'</span>,<span class="string">'EMG3 mean'</span>,<span class="string">'EMG4 mean'</span>,<span class="string">'EMG5 mean'</span>,<span class="string">'EMG6 mean'</span>,<span class="string">'EMG7 mean'</span>,<span class="string">'EMG8 mean'</span>,<span class="string">'OrientationX max'</span>,<span class="string">'OrientationY max'</span>,<span class="string">'OrientationZ max'</span>,<span class="string">'OrientationW max'</span>,<span class="string">'AccelerometerX max'</span>,<span class="string">'AccelerometerY max'</span>,<span class="string">'AccelerometerZ max'</span>,<span class="string">'GyroscopeX max'</span>,<span class="string">'GyroscopeY max'</span>,<span class="string">'GyroscopeZ max'</span>,<span class="string">'EMG1 max'</span>,<span class="string">'EMG2 max'</span>,<span class="string">'EMG3 max'</span>,<span class="string">'EMG4 max'</span>,<span class="string">'EMG5 max'</span>,<span class="string">'EMG6 max'</span>,<span class="string">'EMG7 max'</span>,<span class="string">'EMG8 max'</span>,<span class="string">'OrientationX rms'</span>,<span class="string">'OrientationY rms'</span>,<span class="string">'OrientationZ rms'</span>,<span class="string">'OrientationW rms'</span>,<span class="string">'AccelerometerX rms'</span>,<span class="string">'AccelerometerY rms'</span>,<span class="string">'AccelerometerZ rms'</span>,<span class="string">'GyroscopeX rms'</span>,<span class="string">'GyroscopeY rms'</span>,<span class="string">'GyroscopeZ rms'</span>,<span class="string">'EMG1 rms'</span>,<span class="string">'EMG2 rms'</span>,<span class="string">'EMG3 rms'</span>,<span class="string">'EMG4 rms'</span>,<span class="string">'EMG5 rms'</span>,<span class="string">'EMG6 rms'</span>,<span class="string">'EMG7 rms'</span>,<span class="string">'EMG8 rms'</span>,<span class="string">'OrientationX std'</span>,<span class="string">'OrientationY std'</span>,<span class="string">'OrientationZ std'</span>,<span class="string">'OrientationW std'</span>,<span class="string">'AccelerometerX std'</span>,<span class="string">'AccelerometerY std'</span>,<span class="string">'AccelerometerZ std'</span>,<span class="string">'GyroscopeX std'</span>,<span class="string">'GyroscopeY std'</span>,<span class="string">'GyroscopeZ std'</span>,<span class="string">'EMG1 std'</span>,<span class="string">'EMG2 std'</span>,<span class="string">'EMG3 std'</span>,<span class="string">'EMG4 std'</span>,<span class="string">'EMG5 std'</span>,<span class="string">'EMG6 std'</span>,<span class="string">'EMG7 std'</span>,<span class="string">'EMG8 std'</span>,<span class="string">'OrientationX entropy'</span>,<span class="string">'OrientationY entropy'</span>,<span class="string">'OrientationZ entropy'</span>,<span class="string">'OrientationW entropy'</span>,<span class="string">'AccelerometerX entropy'</span>,<span class="string">'AccelerometerY entropy'</span>,<span class="string">'AccelerometerZ entropy'</span>,<span class="string">'GyroscopeX entropy'</span>,<span class="string">'GyroscopeY entropy'</span>,<span class="string">'GyroscopeZ entropy'</span>,<span class="string">'EMG1 entropy'</span>,<span class="string">'EMG2 entropy'</span>,<span class="string">'EMG3 entropy'</span>,<span class="string">'EMG4 entropy'</span>,<span class="string">'EMG5 entropy'</span>,<span class="string">'EMG6 entropy'</span>,<span class="string">'EMG7 entropy'</span>,<span class="string">'EMG8 entropy'</span>,<span class="string">'OrientationX power'</span>,<span class="string">'OrientationY power'</span>,<span class="string">'OrientationZ power'</span>,<span class="string">'OrientationW power'</span>,<span class="string">'AccelerometerX power'</span>,<span class="string">'AccelerometerY power'</span>,<span class="string">'AccelerometerZ power'</span>,<span class="string">'GyroscopeX power'</span>,<span class="string">'GyroscopeY power'</span>,<span class="string">'GyroscopeZ power'</span>,<span class="string">'EMG1 power'</span>,<span class="string">'EMG2 power'</span>,<span class="string">'EMG3 power'</span>,<span class="string">'EMG4 power'</span>,<span class="string">'EMG5 power'</span>,<span class="string">'EMG6 power'</span>,<span class="string">'EMG7 power'</span>,<span class="string">'EMG8 power'</span>};
+samples_labels = [<span class="string">'user'</span>, <span class="string">'time_stamp'</span>, <span class="string">'ground_truth'</span>, <span class="string">"OrientationX"</span>,<span class="string">"OrientationY"</span>,<span class="string">"OrientationZ"</span>,<span class="string">"OrientationW"</span>,<span class="string">"AccelerometerX"</span>,<span class="string">"AccelerometerY"</span>,<span class="string">"AccelerometerZ"</span>,<span class="string">"GyroscopeX"</span>,<span class="string">"GyroscopeY"</span>,<span class="string">"GyroscopeZ"</span>,<span class="string">"EMG1"</span>,<span class="string">"EMG2"</span>,<span class="string">"EMG3"</span>,<span class="string">"EMG4"</span>,<span class="string">"EMG5"</span>,<span class="string">"EMG6"</span>,<span class="string">"EMG7"</span>,<span class="string">"EMG8"</span>];
+
+<span class="comment">% Refer to the below tables for getting a visual sense of the samples, feature</span>
+<span class="comment">% matrices. Warning: Doesn't contain all observations. Just for visualization</span>
+<span class="comment">% purpose.</span>
+feature_eat_matrix_table  = array2table(feature_eat_matrix,<span class="string">'RowNames'</span>, row_labels);
+feature_noneat_matrix_table  = array2table(feature_noneat_matrix,<span class="string">'RowNames'</span>, row_labels);
+samples_table = array2table(samples_matrix(:,1:2000),<span class="string">'RowNames'</span>,samples_labels);
+
+<span class="comment">% Compute the cosine similarity between the plots to get the</span>
+<span class="comment">% dissimilar features with more distance</span>
+waitbar(.73,f,<span class="string">'Computing cosine distance'</span>);
+pause(1)
+cosine_similarity=[];
+feature_noneat_mat=feature_noneat_matrix(:,(1:1160)); <span class="comment">% Discard one observation and compare the equal number of eating and non eating observations</span>
+num_features = size(feature_eat_matrix_table,1);
+<span class="keyword">for</span> k=1:num_features
+    cosine_similarity=[cosine_similarity 1 - pdist([feature_eat_matrix(k,:); feature_noneat_mat(k,:)], <span class="string">'cosine'</span>)];
+<span class="keyword">end</span>
+mean_cosine_sim = mean(cosine_similarity,2);
+
+picked_features=[];
+
+<span class="comment">% Pick the features with cosine similarity less(or highly dissimilar/distant) than the mean cosine</span>
+<span class="comment">% similarity across all the observations</span>
+<span class="keyword">for</span> k=1:num_features
+    m = 1 - pdist([feature_eat_matrix(k,:); feature_noneat_mat(k,:)], <span class="string">'cosine'</span>);
+    <span class="keyword">if</span> m&gt;=0 &amp;&amp; m&lt;mean_cosine_sim
+        t = [feature_eat_matrix(k,:) feature_noneat_matrix(k,:)];
+        picked_features = vertcat(picked_features, t);
+        figure(<span class="string">'Name'</span>,row_labels{k});
+        clf
+        plot(1:size(feature_eat_matrix,2),smooth(feature_eat_matrix(k,:)));
+        hold <span class="string">on</span>;
+        plot(1:size(feature_noneat_matrix,2),smooth(feature_noneat_matrix(k,:)));
+        xlabel(<span class="string">'Number of samples'</span>);
+        ylabel(row_labels{k});
+        legend(<span class="string">'Eating'</span>,<span class="string">'Noneating'</span>);
+        title([row_labels{k} <span class="string">' Eating vs Noneating'</span>]);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment">% Apply PCA over the distant features picked. Refer '&gt;&gt; doc pca' for more info</span>
+<span class="comment">% how PCA works and the outputs returned</span>
+waitbar(.80,f,<span class="string">'Running PCA'</span>);
+pause(1)
+[coeff,score,latent,tsquared,explained,mu]=pca(picked_features.');
+<span class="comment">% Observe that the top 11 variances constitute to 100% variance and hence</span>
+<span class="comment">% we can safely pick only these components</span>
+explained
+
+<span class="comment">% Plotting the first 3 Principal Components</span>
+figure(<span class="string">'Name'</span>,<span class="string">'Biplot for PC1, PC2, PC3'</span>);
+biplot(coeff(:,1:3),<span class="string">'scores'</span>,score(:,1:3));
+title(<span class="string">'Biplot for PC1, PC2, PC3'</span>);
+
+legend_eigen={};
+figure(<span class="string">'Name'</span>,<span class="string">'Plot for Eigen vectors'</span>);
+<span class="keyword">for</span> i=1:11
+    plot(coeff(:,i));
+    hold <span class="string">on</span>;
+    xlabel(<span class="string">'Number of samples'</span>);
+    ylabel(<span class="string">'Eigen Vectors for Principal Components'</span>);
+    legend_eigen{i} = [<span class="string">'Eigen Vector '</span> num2str(i)];
+<span class="keyword">end</span>
+title(<span class="string">'Plot for Eigen vectors'</span>);
+legend(legend_eigen);
+
+new_feature_mat = score;
+new_feature_mat = [new_feature_mat vertcat(ones(1160,1), zeros(1161,1))];
+
+<span class="keyword">for</span> i=1:11
+    figure(<span class="string">'Name'</span>,[<span class="string">'Plot of new feature matrix for PC '</span> num2str(i) <span class="string">' with variance '</span> num2str(explained(i,1)) <span class="string">'%'</span>])
+    plot(smooth(new_feature_mat([1:1160],i)));
+    hold <span class="string">on</span>;
+    plot(smooth(new_feature_mat([1161:2321],i)));
+    xlabel(<span class="string">'Number of samples'</span>);
+    ylabel(<span class="string">'Principle Component Values'</span>);
+    title([<span class="string">'Plot of new feature matrix for PC '</span> num2str(i) <span class="string">' with variance '</span> num2str(explained(i,1)) <span class="string">'%'</span>]);
+    legend(<span class="string">'Eating'</span>,<span class="string">'Noneating'</span>);
+<span class="keyword">end</span>
+
+waitbar(.90,f,<span class="string">'Saving plots'</span>);
+pause(1)
+
+figures_folder_name = <span class="string">'figures'</span>; <span class="comment">% Destination folder for storing the plots</span>
+mkdir(figures_folder_name);
+figures_list = findobj(allchild(0), <span class="string">'flat'</span>, <span class="string">'Type'</span>, <span class="string">'figure'</span>);
+<span class="keyword">for</span> i = 1:length(figures_list)
+    figure_handle = figures_list(i);
+    figure_name   = get(figure_handle, <span class="string">'Name'</span>);
+    <span class="keyword">if</span> figure_name~=<span class="string">""</span>
+        savefig(figure_handle, fullfile(figures_folder_name, [figure_name, <span class="string">'.fig'</span>]));
+        saveas(figure_handle, fullfile(figures_folder_name, [figure_name, <span class="string">'.png'</span>]),<span class="string">'png'</span>);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+waitbar(1,f,<span class="string">'Finishing'</span>);
+pause(1)
+close(f)
+clearvars <span class="string">-except</span> <span class="string">samples_table</span> <span class="string">feature_eat_matrix_table</span> <span class="string">feature_noneat_matrix_table</span>
+</pre><pre class="codeoutput">Warning: Columns of X are linearly dependent to within machine precision.
+Using only the first 24 components to compute TSQUARED. 
+
+explained =
+
+   82.3409
+   11.2408
+    3.7703
+    1.2797
+    0.6385
+    0.3237
+    0.2705
+    0.0678
+    0.0411
+    0.0179
+    0.0089
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+    0.0000
+
+Warning: Directory already exists. 
+</pre><img vspace="5" hspace="5" src="dm_main_01.png" alt=""> <img vspace="5" hspace="5" src="dm_main_02.png" alt=""> <img vspace="5" hspace="5" src="dm_main_03.png" alt=""> <img vspace="5" hspace="5" src="dm_main_04.png" alt=""> <img vspace="5" hspace="5" src="dm_main_05.png" alt=""> <img vspace="5" hspace="5" src="dm_main_06.png" alt=""> <img vspace="5" hspace="5" src="dm_main_07.png" alt=""> <img vspace="5" hspace="5" src="dm_main_08.png" alt=""> <img vspace="5" hspace="5" src="dm_main_09.png" alt=""> <img vspace="5" hspace="5" src="dm_main_10.png" alt=""> <img vspace="5" hspace="5" src="dm_main_11.png" alt=""> <img vspace="5" hspace="5" src="dm_main_12.png" alt=""> <img vspace="5" hspace="5" src="dm_main_13.png" alt=""> <img vspace="5" hspace="5" src="dm_main_14.png" alt=""> <img vspace="5" hspace="5" src="dm_main_15.png" alt=""> <img vspace="5" hspace="5" src="dm_main_16.png" alt=""> <img vspace="5" hspace="5" src="dm_main_17.png" alt=""> <img vspace="5" hspace="5" src="dm_main_18.png" alt=""> <img vspace="5" hspace="5" src="dm_main_19.png" alt=""> <img vspace="5" hspace="5" src="dm_main_20.png" alt=""> <img vspace="5" hspace="5" src="dm_main_21.png" alt=""> <img vspace="5" hspace="5" src="dm_main_22.png" alt=""> <img vspace="5" hspace="5" src="dm_main_23.png" alt=""> <img vspace="5" hspace="5" src="dm_main_24.png" alt=""> <img vspace="5" hspace="5" src="dm_main_25.png" alt=""> <img vspace="5" hspace="5" src="dm_main_26.png" alt=""> <img vspace="5" hspace="5" src="dm_main_27.png" alt=""> <img vspace="5" hspace="5" src="dm_main_28.png" alt=""> <img vspace="5" hspace="5" src="dm_main_29.png" alt=""> <img vspace="5" hspace="5" src="dm_main_30.png" alt=""> <img vspace="5" hspace="5" src="dm_main_31.png" alt=""> <img vspace="5" hspace="5" src="dm_main_32.png" alt=""> <img vspace="5" hspace="5" src="dm_main_33.png" alt=""> <img vspace="5" hspace="5" src="dm_main_34.png" alt=""> <img vspace="5" hspace="5" src="dm_main_35.png" alt=""> <img vspace="5" hspace="5" src="dm_main_36.png" alt=""> <img vspace="5" hspace="5" src="dm_main_37.png" alt=""> <img vspace="5" hspace="5" src="dm_main_38.png" alt=""> <img vspace="5" hspace="5" src="dm_main_39.png" alt=""> <img vspace="5" hspace="5" src="dm_main_40.png" alt=""> <img vspace="5" hspace="5" src="dm_main_41.png" alt=""> <img vspace="5" hspace="5" src="dm_main_42.png" alt=""> <img vspace="5" hspace="5" src="dm_main_43.png" alt=""> <img vspace="5" hspace="5" src="dm_main_44.png" alt=""> <img vspace="5" hspace="5" src="dm_main_45.png" alt=""> <img vspace="5" hspace="5" src="dm_main_46.png" alt=""> <img vspace="5" hspace="5" src="dm_main_47.png" alt=""> <img vspace="5" hspace="5" src="dm_main_48.png" alt=""> <img vspace="5" hspace="5" src="dm_main_49.png" alt=""> <img vspace="5" hspace="5" src="dm_main_50.png" alt=""> <img vspace="5" hspace="5" src="dm_main_51.png" alt=""> <img vspace="5" hspace="5" src="dm_main_52.png" alt=""> <img vspace="5" hspace="5" src="dm_main_53.png" alt=""> <img vspace="5" hspace="5" src="dm_main_54.png" alt=""> <img vspace="5" hspace="5" src="dm_main_55.png" alt=""> <img vspace="5" hspace="5" src="dm_main_56.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+%               CSE 572: Data Mining - Assignment 1                       %
+%                           Group 3                                       %
+% Pratik Bartakke, Vihar Bhatt, Venkata Sai Sandeep Nadella, Darsh Parikh %
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+
+% Clearing all data from previous runs
+clc
+clear
+close all
+
+f = waitbar(0,'Please wait...');
+pause(.5)
+
+% Expects the dataset to be present at the root of current working directory.
+% Note: The 'user9' folder under 'groundTruth' folder has been renamed to
+% 'user09' to maintain consistency with 'user09' folder under 'MyoData'
+% folder
+% ./
+% |REPLACE_WITH_DASH_DASH Data_Mining/
+% |   |REPLACE_WITH_DASH_DASH groundTruth/
+% |   |REPLACE_WITH_DASH_DASH MyoData/
+% |   |REPLACE_WITH_DASH_DASH DataMining_project_help.docx
+% |REPLACE_WITH_DASH_DASH dm_main.m
+
+addpath(genpath(pwd));  % Adding all the folders and subfolders of the current working directory to the work path
+
+% Reading the sample dataset
+waitbar(.33,f,'Loading the data');
+pause(1)
+fork_list = dir('Data_Mining/MyoData/*/fork/*');
+fork_list = fork_list(~ismember({fork_list.name},{'.','..'}));
+spoon_list = dir('Data_Mining/MyoData/*/spoon/*');
+spoon_list = spoon_list(~ismember({spoon_list.name},{'.','..'}));
+ground_truth_fork_list  = dir('Data_Mining/groundTruth/*/fork/*.txt');
+ground_truth_spoon_list  = dir('Data_Mining/groundTruth/*/spoon/*.txt');
+samples_matrix = [];    % Used for storing the entire sample data set after data cleaning
+
+waitbar(.40,f,'Verifying the data');
+pause(1)
+
+if size(fork_list,1)~=(size(spoon_list,1))
+    throw(MException('DM:DatasetMismatch', 'The number of fork and spoon eating action entries are not the same'));
+end
+
+if size(fork_list,1)/3~=size(ground_truth_fork_list,1)
+    throw(MException('DM:DatasetMismatch', 'The number of eating actions and ground truth label entries are not the same'));
+end
+
+if size(ground_truth_fork_list,1)~=size(ground_truth_spoon_list,1)
+    throw(MException('DM:DatasetMismatch', 'The number of ground truth labels for spoon and fork entries are not the same'));
+end
+
+num_users  = size(ground_truth_fork_list,1);
+
+% The OOTB code only runs on fork dataset. Can be tweaked based on need to
+% run on spoon dataset as well.
+waitbar(.45,f,'Organizing data');
+pause(1)
+for i = 1:num_users
+    
+    path_split  = strsplit(ground_truth_fork_list(i).folder, '/');
+    user  = path_split{end-1};  % contains the current user for which the data is being processed
+    ground_truth_fork_data = csvread(ground_truth_fork_list(i).name);
+    
+    imu_fork_data = [];
+    emg_fork_data = [];
+    video_info_fork_data = [];
+    
+    %     Populate the dataset for current user
+    for j=1:size(fork_list,1)
+        if contains(fork_list(j).folder, user) && contains(fork_list(j).name,"IMU")
+            imu_fork_data = csvread(fork_list(j).name);
+        elseif contains(fork_list(j).folder, user) && contains(fork_list(j).name,"EMG")
+            emg_fork_data = csvread(fork_list(j).name);
+        elseif contains(fork_list(j).folder, user) && contains(fork_list(j).name,"video_info")
+            video_info_fork_data = csvread(fork_list(j).name);
+        end
+        if isempty(imu_fork_data) || isempty(emg_fork_data) || isempty(video_info_fork_data)
+            continue;
+        else
+            break;
+        end
+    end
+    
+    % Get the time axis of the video recording
+    video_time_axis = linspace(max(imu_fork_data(1,1), emg_fork_data(1,1)),min(imu_fork_data(end,1), emg_fork_data(end,1)),(ground_truth_fork_data(end,2)-ground_truth_fork_data(1,1)+1));
+    % Get the ground truth axis
+    gt_time_axis = linspace(min(imu_fork_data(end,1), emg_fork_data(end,1))-(ground_truth_fork_data(end,2)*(1000/30)),min(imu_fork_data(end,1), emg_fork_data(end,1)),ground_truth_fork_data(end,2));
+    
+    gt_label = zeros(1,ground_truth_fork_data(end,2)); % the indices indicate ground truth frame axis
+    for s=1:size(ground_truth_fork_data,1)
+        for h = 1:length(gt_label)
+            if h>=ground_truth_fork_data(s,1) && h<=ground_truth_fork_data(s,2)
+                gt_label(1,h)=1; % Indicate it as eating frame
+            end
+        end
+    end
+    
+    imu_fork_time = imu_fork_data(:,1);
+    emg_fork_time = emg_fork_data(:,1);
+    
+    %     interpolate the IMU fork data to a common video time axis to combine
+    %     IMU, EMG and GroundTruth data
+    interpolated_fork_data = [];
+    interpolated_imu_data = [];
+    interpolated_emg_data = [];
+    interpolated_gt_data = [];
+    interpolated_fork_data_cleaned = [];
+    
+    for k = 2:11    % there are 18 sensors in the given dataset
+        interpolated_imu_data = vertcat(interpolated_imu_data,interp1(imu_fork_time, imu_fork_data(:,k), video_time_axis, 'linear'));
+        if k~=10 && k~=11
+            interpolated_emg_data = vertcat(interpolated_emg_data,interp1(emg_fork_time, emg_fork_data(:,k), video_time_axis, 'linear'));
+        end
+    end
+    interpolated_gt_data = interp1(gt_time_axis, gt_label, video_time_axis, 'linear');
+    interpolated_fork_data = vertcat(interpolated_gt_data, interpolated_imu_data, interpolated_emg_data);
+    interpolated_fork_data = vertcat(repmat(str2num(strrep(user,'user','')),1,length(video_time_axis)), video_time_axis, interpolated_fork_data);
+    
+    for g = 1:size(interpolated_fork_data, 2)
+        if (interpolated_fork_data(3,g)==1||interpolated_fork_data(3,g)==0)
+            interpolated_fork_data_cleaned = [interpolated_fork_data_cleaned interpolated_fork_data(:,g)];
+        end
+    end
+    
+    % concatenate and store the data corresponding to each user along
+    % with timestamps across all users in the samples_matrix
+    samples_matrix = [samples_matrix interpolated_fork_data_cleaned];
+    
+end
+
+clearvars -except f samples_matrix
+
+
+feature_eat_matrix = [];
+feature_noneat_matrix = [];
+
+prev = 0;
+curr=0;
+t_mat = [];
+
+% Compute the feature matrix. 6 features were considered for this
+% assignment. 'mean', 'max', 'rms', 'std', 'entropy', 'power'
+waitbar(.50,f,'Extracting features');
+pause(1)
+for i = 1:size(samples_matrix,2)
+    curr = samples_matrix(3,i);
+    if (curr == 0 && prev == 0) || (curr==1 && prev==1)
+        t_mat = [t_mat samples_matrix(4:end,i)];
+    elseif curr==0 && prev==1
+        fft_feature = abs(fft(t_mat,[],2));
+        power = fft_feature.*conj(fft_feature)/size(t_mat,2);
+        total_power = sum(power,2);
+        
+        p=power;
+        p=p/sum(p+ 1e-12);
+        logd = log2(p + 1e-12);
+        entropy = -sum(p.*logd,2)/log2(length(p));
+        
+        t_mat = vertcat(mean(t_mat,2), max(t_mat,[],2), rms(t_mat,2), std(t_mat,[],2), entropy, total_power);
+        feature_eat_matrix = [feature_eat_matrix t_mat];
+        t_mat=samples_matrix(4:end,i);
+    else
+        fft_feature = abs(fft(t_mat,[],2));
+        power = fft_feature.*conj(fft_feature)/size(t_mat,2);
+        total_power = sum(power,2);
+        
+        p=power;
+        p=p/sum(p+ 1e-12);
+        logd = log2(p + 1e-12);
+        entropy = -sum(p.*logd,2)/log2(length(p));
+        
+        t_mat = vertcat(mean(t_mat,2), max(t_mat,[],2), rms(t_mat,2), std(t_mat,[],2), entropy, total_power);
+        feature_noneat_matrix = [feature_noneat_matrix t_mat];
+        t_mat=samples_matrix(4:end,i);
+    end
+    prev=curr;
+end
+row_labels = {'OrientationX mean','OrientationY mean','OrientationZ mean','OrientationW mean','AccelerometerX mean','AccelerometerY mean','AccelerometerZ mean','GyroscopeX mean','GyroscopeY mean','GyroscopeZ mean','EMG1 mean','EMG2 mean','EMG3 mean','EMG4 mean','EMG5 mean','EMG6 mean','EMG7 mean','EMG8 mean','OrientationX max','OrientationY max','OrientationZ max','OrientationW max','AccelerometerX max','AccelerometerY max','AccelerometerZ max','GyroscopeX max','GyroscopeY max','GyroscopeZ max','EMG1 max','EMG2 max','EMG3 max','EMG4 max','EMG5 max','EMG6 max','EMG7 max','EMG8 max','OrientationX rms','OrientationY rms','OrientationZ rms','OrientationW rms','AccelerometerX rms','AccelerometerY rms','AccelerometerZ rms','GyroscopeX rms','GyroscopeY rms','GyroscopeZ rms','EMG1 rms','EMG2 rms','EMG3 rms','EMG4 rms','EMG5 rms','EMG6 rms','EMG7 rms','EMG8 rms','OrientationX std','OrientationY std','OrientationZ std','OrientationW std','AccelerometerX std','AccelerometerY std','AccelerometerZ std','GyroscopeX std','GyroscopeY std','GyroscopeZ std','EMG1 std','EMG2 std','EMG3 std','EMG4 std','EMG5 std','EMG6 std','EMG7 std','EMG8 std','OrientationX entropy','OrientationY entropy','OrientationZ entropy','OrientationW entropy','AccelerometerX entropy','AccelerometerY entropy','AccelerometerZ entropy','GyroscopeX entropy','GyroscopeY entropy','GyroscopeZ entropy','EMG1 entropy','EMG2 entropy','EMG3 entropy','EMG4 entropy','EMG5 entropy','EMG6 entropy','EMG7 entropy','EMG8 entropy','OrientationX power','OrientationY power','OrientationZ power','OrientationW power','AccelerometerX power','AccelerometerY power','AccelerometerZ power','GyroscopeX power','GyroscopeY power','GyroscopeZ power','EMG1 power','EMG2 power','EMG3 power','EMG4 power','EMG5 power','EMG6 power','EMG7 power','EMG8 power'};
+samples_labels = ['user', 'time_stamp', 'ground_truth', "OrientationX","OrientationY","OrientationZ","OrientationW","AccelerometerX","AccelerometerY","AccelerometerZ","GyroscopeX","GyroscopeY","GyroscopeZ","EMG1","EMG2","EMG3","EMG4","EMG5","EMG6","EMG7","EMG8"];
+
+% Refer to the below tables for getting a visual sense of the samples, feature
+% matrices. Warning: Doesn't contain all observations. Just for visualization
+% purpose.
+feature_eat_matrix_table  = array2table(feature_eat_matrix,'RowNames', row_labels);
+feature_noneat_matrix_table  = array2table(feature_noneat_matrix,'RowNames', row_labels);
+samples_table = array2table(samples_matrix(:,1:2000),'RowNames',samples_labels);
+
+% Compute the cosine similarity between the plots to get the
+% dissimilar features with more distance
+waitbar(.73,f,'Computing cosine distance');
+pause(1)
+cosine_similarity=[];
+feature_noneat_mat=feature_noneat_matrix(:,(1:1160)); % Discard one observation and compare the equal number of eating and non eating observations
+num_features = size(feature_eat_matrix_table,1);
+for k=1:num_features
+    cosine_similarity=[cosine_similarity 1 - pdist([feature_eat_matrix(k,:); feature_noneat_mat(k,:)], 'cosine')];
+end
+mean_cosine_sim = mean(cosine_similarity,2);
+
+picked_features=[];
+
+% Pick the features with cosine similarity less(or highly dissimilar/distant) than the mean cosine
+% similarity across all the observations
+for k=1:num_features
+    m = 1 - pdist([feature_eat_matrix(k,:); feature_noneat_mat(k,:)], 'cosine');
+    if m>=0 && m<mean_cosine_sim
+        t = [feature_eat_matrix(k,:) feature_noneat_matrix(k,:)];
+        picked_features = vertcat(picked_features, t);
+        figure('Name',row_labels{k});
+        clf
+        plot(1:size(feature_eat_matrix,2),smooth(feature_eat_matrix(k,:)));
+        hold on;
+        plot(1:size(feature_noneat_matrix,2),smooth(feature_noneat_matrix(k,:)));
+        xlabel('Number of samples');
+        ylabel(row_labels{k});
+        legend('Eating','Noneating');
+        title([row_labels{k} ' Eating vs Noneating']);
+    end
+end
+
+% Apply PCA over the distant features picked. Refer '>> doc pca' for more info
+% how PCA works and the outputs returned
+waitbar(.80,f,'Running PCA');
+pause(1)
+[coeff,score,latent,tsquared,explained,mu]=pca(picked_features.');
+% Observe that the top 11 variances constitute to 100% variance and hence
+% we can safely pick only these components
+explained
+
+% Plotting the first 3 Principal Components
+figure('Name','Biplot for PC1, PC2, PC3');
+biplot(coeff(:,1:3),'scores',score(:,1:3));
+title('Biplot for PC1, PC2, PC3');
+
+legend_eigen={};
+figure('Name','Plot for Eigen vectors');
+for i=1:11
+    plot(coeff(:,i));
+    hold on;
+    xlabel('Number of samples');
+    ylabel('Eigen Vectors for Principal Components');
+    legend_eigen{i} = ['Eigen Vector ' num2str(i)];
+end
+title('Plot for Eigen vectors');
+legend(legend_eigen);
+
+new_feature_mat = score;
+new_feature_mat = [new_feature_mat vertcat(ones(1160,1), zeros(1161,1))];
+
+for i=1:11
+    figure('Name',['Plot of new feature matrix for PC ' num2str(i) ' with variance ' num2str(explained(i,1)) '%'])
+    plot(smooth(new_feature_mat([1:1160],i)));
+    hold on;
+    plot(smooth(new_feature_mat([1161:2321],i)));
+    xlabel('Number of samples');
+    ylabel('Principle Component Values');
+    title(['Plot of new feature matrix for PC ' num2str(i) ' with variance ' num2str(explained(i,1)) '%']);
+    legend('Eating','Noneating');
+end
+
+waitbar(.90,f,'Saving plots');
+pause(1)
+
+figures_folder_name = 'figures'; % Destination folder for storing the plots
+mkdir(figures_folder_name);
+figures_list = findobj(allchild(0), 'flat', 'Type', 'figure');
+for i = 1:length(figures_list)
+    figure_handle = figures_list(i);
+    figure_name   = get(figure_handle, 'Name');
+    if figure_name~=""
+        savefig(figure_handle, fullfile(figures_folder_name, [figure_name, '.fig']));
+        saveas(figure_handle, fullfile(figures_folder_name, [figure_name, '.png']),'png');
+    end
+end
+
+waitbar(1,f,'Finishing');
+pause(1)
+close(f)
+clearvars -except samples_table feature_eat_matrix_table feature_noneat_matrix_table
+
+##### SOURCE END #####
+--></body></html>
