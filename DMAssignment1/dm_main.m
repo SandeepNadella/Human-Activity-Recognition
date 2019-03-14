@@ -1,5 +1,5 @@
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
-%               CSE 572: Data Mining - Assignment 1                       %
+%               CSE 572: Data Mining - Assignment 2                       %
 %                           Group 3                                       %
 % Pratik Bartakke, Vihar Bhatt, Venkata Sai Sandeep Nadella, Darsh Parikh %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
@@ -8,6 +8,9 @@
 clc
 clear
 close all
+
+diary log.txt
+diary on
 
 f = waitbar(0,'Please wait...');
 pause(.5)
@@ -36,6 +39,13 @@ ground_truth_fork_list  = dir('Data_Mining/groundTruth/*/fork/*.txt');
 ground_truth_spoon_list  = dir('Data_Mining/groundTruth/*/spoon/*.txt');
 samples_matrix = [];    % Used for storing the entire sample data set after data cleaning
 
+precision = @(confusionMat) diag(confusionMat)./sum(confusionMat,2);
+
+recall = @(confusionMat) diag(confusionMat)./sum(confusionMat,1)';
+
+f1Scores = @(confusionMat) 2*(precision(confusionMat).*recall(confusionMat))./(precision(confusionMat)+recall(confusionMat));
+
+
 waitbar(.40,f,'Verifying the data');
 pause(1)
 
@@ -57,6 +67,7 @@ num_users  = size(ground_truth_fork_list,1);
 % run on spoon dataset as well.
 waitbar(.45,f,'Organizing data');
 pause(1)
+
 for i = 1:num_users
     
     path_split  = strsplit(ground_truth_fork_list(i).folder, '/');
@@ -100,8 +111,8 @@ for i = 1:num_users
     imu_fork_time = imu_fork_data(:,1);
     emg_fork_time = emg_fork_data(:,1);
     
-    %     interpolate the IMU fork data to a common video time axis to combine
-    %     IMU, EMG and GroundTruth data
+    % interpolate the IMU fork data to a common video time axis to combine
+    % IMU, EMG and GroundTruth data
     interpolated_fork_data = [];
     interpolated_imu_data = [];
     interpolated_emg_data = [];
@@ -130,11 +141,10 @@ for i = 1:num_users
     
 end
 
-clearvars -except f samples_matrix
-
-
 feature_eat_matrix = [];
 feature_noneat_matrix = [];
+user_eat_matrix = [];
+user_noneat_matrix = [];
 
 prev = 0;
 curr=0;
@@ -160,6 +170,7 @@ for i = 1:size(samples_matrix,2)
         
         t_mat = vertcat(mean(t_mat,2), max(t_mat,[],2), rms(t_mat,2), std(t_mat,[],2), entropy, total_power);
         feature_eat_matrix = [feature_eat_matrix t_mat];
+        user_eat_matrix = [user_eat_matrix samples_matrix(1,i)];
         t_mat=samples_matrix(4:end,i);
     else
         fft_feature = abs(fft(t_mat,[],2));
@@ -173,6 +184,7 @@ for i = 1:size(samples_matrix,2)
         
         t_mat = vertcat(mean(t_mat,2), max(t_mat,[],2), rms(t_mat,2), std(t_mat,[],2), entropy, total_power);
         feature_noneat_matrix = [feature_noneat_matrix t_mat];
+        user_noneat_matrix = [user_noneat_matrix samples_matrix(1,i)];
         t_mat=samples_matrix(4:end,i);
     end
     prev=curr;
@@ -208,16 +220,16 @@ for k=1:num_features
     if m>=0 && m<mean_cosine_sim
         t = [feature_eat_matrix(k,:) feature_noneat_matrix(k,:)];
         picked_features = vertcat(picked_features, t);
-        figure('Name',row_labels{k});
-        clf
-        plot(1:size(feature_eat_matrix,2),smooth(feature_eat_matrix(k,:)));
-        hold on;
-        plot(1:size(feature_noneat_matrix,2),smooth(feature_noneat_matrix(k,:)));
-        xlabel('Number of samples');
-        ylabel(row_labels{k});
-        legend('Eating','Noneating');
-        title([row_labels{k} ' Eating vs Noneating']);
     end
+    figure('Name',row_labels{k});
+    clf
+    plot(1:size(feature_eat_matrix,2),smooth(feature_eat_matrix(k,:)));
+    hold on;
+    plot(1:size(feature_noneat_matrix,2),smooth(feature_noneat_matrix(k,:)));
+    xlabel('Number of samples');
+    ylabel(row_labels{k});
+    legend('Eating','Noneating');
+    title([row_labels{k} ' Eating vs Noneating']);
 end
 
 % Apply PCA over the distant features picked. Refer '>> doc pca' for more info
@@ -248,6 +260,9 @@ legend(legend_eigen);
 
 new_feature_mat = score;
 new_feature_mat = [new_feature_mat vertcat(ones(1160,1), zeros(1161,1))];
+new_feature_eat_matrix = new_feature_mat(1:1160,1:43)';
+new_feature_noneat_matrix = new_feature_mat(1161:end,1:43)';
+
 
 for i=1:11
     figure('Name',['Plot of new feature matrix for PC ' num2str(i) ' with variance ' num2str(explained(i,1)) '%'])
@@ -278,4 +293,198 @@ end
 waitbar(1,f,'Finishing');
 pause(1)
 close(f)
-clearvars -except samples_table feature_eat_matrix_table feature_noneat_matrix_table
+
+close all
+
+new_feature_mat(:,12:end)=[];
+new_feature_eat_matrix(12:end,:)=[];
+new_feature_noneat_matrix(12:end,:)=[];
+
+% User dependent analysis
+unq = unique(user_eat_matrix);
+for u = 1:size(unq,2)
+    user = unq(1,u)
+    
+    % Get the features corresponding to current user
+    feature_user_eat_matrix = [];
+    for i = 1:size(user_eat_matrix, 2)
+        if user == user_eat_matrix(1,i)
+            feature_user_eat_matrix = [feature_user_eat_matrix new_feature_eat_matrix(:,i)];
+        end
+    end
+    
+    feature_user_noneat_matrix = [];
+    for i = 1:size(user_noneat_matrix, 2)
+        if user == user_noneat_matrix(1,i)
+            feature_user_noneat_matrix = [feature_user_noneat_matrix new_feature_noneat_matrix(:,i)];
+        end
+    end
+    
+    % Perform 60% split and use as training data
+    feature_user_matrix = [feature_user_eat_matrix feature_user_noneat_matrix];
+    Tbl = [feature_user_eat_matrix(:,1:ceil(0.6*size(feature_user_eat_matrix,2))) feature_user_noneat_matrix(:,1:floor(0.6*size(feature_user_noneat_matrix,2)))]';
+    test_data = [feature_user_eat_matrix(:,ceil(0.6*size(feature_user_eat_matrix,2))+1:end) feature_user_noneat_matrix(:,floor(0.6*size(feature_user_noneat_matrix,2))+1:end)]';
+    
+    [size_train,~] = size(Tbl);
+    size_test = size(test_data,1);
+    train_classes = ones(size_train, 1);
+    test_classes = ones(size_test, 1);
+    
+    [~, size_train_eat] = size(feature_user_eat_matrix);
+    size_train_eat = ceil(size_train_eat*0.6);
+    size_test_eat = size(feature_user_eat_matrix,2)-size_train_eat;
+    
+    [~,size_train_noneat] = size(feature_user_noneat_matrix);
+    size_train_noneat = ceil(size_train_noneat*0.6);
+    size_test_noneat = size(feature_user_noneat_matrix,2)-size_train_noneat;
+    
+    % Decision Tree
+    train_classes(size_train_eat + 1 : end) = 0;
+    test_classes(size_test_eat + 1 : end) = 0;
+    
+    tree = fitctree(Tbl, train_classes);
+    labels_dt = predict(tree, test_data);
+    
+    figure('Name',['Decision Tree Confusion Matrix for user ' num2str(user)]);
+    [conf, order] = confusionmat(test_classes, labels_dt);
+    order
+    dtf1 = f1Scores(conf)
+    plotconfusion(test_classes', labels_dt');
+    title(['Decision Tree Confusion Matrix for user ' num2str(user)]);
+    
+    % SVM
+    train_classes = ones(size_train, 1);
+    test_classes = ones(size_test, 1);
+    train_classes(size_train_eat + 1 : end) = -1;
+    test_classes(size_test_eat + 1 : end) = -1;
+    Mdl = fitcsvm(Tbl, train_classes, 'KernelFunction', 'rbf', 'Standardize', true);
+    labels_svm = predict(Mdl, test_data);
+    labels_svm = (labels_svm + 1) / 2;
+    test_classes_svm = (test_classes + 1) / 2;
+    
+    figure('Name',['SVM Confusion Matrix for user ' num2str(user)]);
+    [conf, order] = confusionmat(test_classes_svm, labels_svm);
+    order
+    svmf1 = f1Scores(conf)
+    plotconfusion(test_classes_svm', labels_svm');
+    title(['SVM Confusion Matrix for user ' num2str(user)]);
+    
+    train_classes = ones(size_train, 1);
+    test_classes = ones(size_test, 1);
+    
+    % NeuralNet
+    train_classes(size_train_eat + 1 : end) = 0;
+    test_classes(size_test_eat + 1 : end) = 0;
+    
+    net = patternnet(10);
+    net.divideFcn = 'divideind';
+    net.divideParam.trainInd = 1 : size_train;
+    net.divideParam.testInd = size_train + 1 : (size_train + size_test);
+    
+    total_training = [Tbl; test_data]';
+    total_classes = [train_classes; test_classes]';
+    
+    [net, tr] = train(net, total_training, total_classes);
+    test_indices = tr.testInd;
+    test_outputs = net(total_training(:, test_indices));
+    
+    figure('Name',['NeuralNet Confusion Matrix for user ' num2str(user)]);
+    [conf, order] = confusionmat(total_classes(:, test_indices)', round(test_outputs'));
+    order
+    nnf1 = f1Scores(conf)
+    plotconfusion(total_classes(:, test_indices), test_outputs);
+    title(['NeuralNet Confusion Matrix for user ' num2str(user)]);
+    
+end
+
+% User independent analysis
+"Overall"
+% Perform 60% split and use as training data
+feature_matrix = [new_feature_eat_matrix new_feature_noneat_matrix];
+Tbl = [new_feature_eat_matrix(:,1:ceil(0.6*size(new_feature_eat_matrix,2))) new_feature_noneat_matrix(:,1:floor(0.6*size(new_feature_noneat_matrix,2)))]';
+test_data = [new_feature_eat_matrix(:,ceil(0.6*size(new_feature_eat_matrix,2))+1:end) new_feature_noneat_matrix(:,floor(0.6*size(new_feature_noneat_matrix,2))+1:end)]';
+
+[size_train,~] = size(Tbl);
+size_test = size(test_data,1);
+train_classes = ones(size_train, 1);
+test_classes = ones(size_test, 1);
+
+[~, size_train_eat] = size(new_feature_eat_matrix);
+size_train_eat = ceil(size_train_eat*0.6);
+size_test_eat = size(new_feature_eat_matrix,2)-size_train_eat;
+
+[~,size_train_noneat] = size(new_feature_noneat_matrix);
+size_train_noneat = ceil(size_train_noneat*0.6);
+size_test_noneat = size(new_feature_noneat_matrix,2)-size_train_noneat;
+
+train_classes(size_train_eat + 1 : end) = 0;
+test_classes(size_test_eat + 1 : end) = 0;
+
+% Decision Tree
+tree = fitctree(Tbl, train_classes);
+labels_dt = predict(tree, test_data);
+
+figure('Name', ['Overall Decision Tree Confusion Matrix']);
+[conf, order] = confusionmat(test_classes, labels_dt);
+order
+dtf1 = f1Scores(conf)
+plotconfusion(test_classes', labels_dt');
+title(['Overall Decision Tree Confusion Matrix']);
+
+% SVM
+train_classes = ones(size_train, 1);
+test_classes = ones(size_test, 1);
+train_classes(size_train_eat + 1 : end) = -1;
+test_classes(size_test_eat + 1 : end) = -1;
+Mdl = fitcsvm(Tbl, train_classes, 'KernelFunction', 'RBF', 'Standardize', true);
+labels_svm = predict(Mdl, test_data);
+labels_svm = (labels_svm + 1) / 2;
+test_classes_svm = (test_classes + 1) / 2;
+
+figure('Name',['Overall SVM Confusion Matrix']);
+[conf, order] = confusionmat(test_classes_svm, labels_svm);
+order
+svmf1 = f1Scores(conf)
+plotconfusion(test_classes_svm', labels_svm');
+title(['Overall SVM Confusion Matrix']);
+
+% NeuralNet
+train_classes = ones(size_train, 1);
+test_classes = ones(size_test, 1);
+train_classes(size_train_eat + 1 : end) = 0;
+test_classes(size_test_eat + 1 : end) = 0;
+
+net = patternnet(10);
+net.divideFcn = 'divideind';
+net.divideParam.trainInd = 1 : size_train;
+net.divideParam.testInd = size_train + 1 : (size_train + size_test);
+
+total_training = [Tbl; test_data]';
+total_classes = [train_classes; test_classes]';
+
+[net, tr] = train(net, total_training, total_classes);
+test_indices = tr.testInd;
+test_outputs = net(total_training(:, test_indices));
+
+figure('Name','NeuralNet Confusion Matrix');
+[conf, order] = confusionmat(total_classes(:, test_indices)', round(test_outputs'));
+order
+nnf1 = f1Scores(conf)
+plotconfusion(total_classes(:, test_indices), test_outputs);
+title('Overall NeuralNet Confusion Matrix');
+
+conf_folder_name = 'Confusion Matrices'; % Destination folder for storing the plots
+mkdir(conf_folder_name);
+figures_list = findobj(allchild(0), 'flat', 'Type', 'figure');
+for i = 1:length(figures_list)
+    figure_handle = figures_list(i);
+    figure_name   = get(get(figure_handle.CurrentAxes, 'Title'),'String');
+    if figure_name~=""
+        savefig(figure_handle, fullfile(conf_folder_name, [figure_name, '.fig']));
+        saveas(figure_handle, fullfile(conf_folder_name, [figure_name, '.png']),'png');
+    end
+end
+
+diary off
+clear
+close all
