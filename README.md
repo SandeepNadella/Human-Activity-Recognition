@@ -1,4 +1,4 @@
-# Human-Activity-Recognition
+# Human Activity Recognition
 
 ## Phase 1
 
@@ -8,7 +8,7 @@
 
 [Phase 2 Report](https://github.com/SandeepNadella/Human-Activity-Recognition/blob/master/src/Assignment%202%20Report.pdf)
 
-## Screenshots
+## Plots and Screenshots
 
 ### Confusion matrices
 
