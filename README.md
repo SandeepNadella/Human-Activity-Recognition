@@ -1,2 +1,9 @@
 # Human-Activity-Recognition
-An activity recognition project aimed at recognizing eating action from a time series data containing eating, non-eating actions
+
+## Phase 1
+
+[Phase 1 Report](https://github.com/SandeepNadella/Human-Activity-Recognition/blob/master/src/Assignment%201%20Report.pdf)
+
+## Phase 2
+
+[Phase 2 Report](https://github.com/SandeepNadella/Human-Activity-Recognition/blob/master/src/Assignment%202%20Report.pdf)
