@@ -18,7 +18,7 @@
 
 [Plots of the features analyzed](https://github.com/SandeepNadella/Human-Activity-Recognition/tree/master/src/figures)
 
-### Neural Networks(NN)
+#### Learning using Neural Nets(NN)
 
 ![](https://github.com/SandeepNadella/Human-Activity-Recognition/blob/master/src/NN%20Figures/Screen%20Shot%202019-02-26%20at%208.30.41%20PM.png)
 ![](https://github.com/SandeepNadella/Human-Activity-Recognition/blob/master/src/NN%20Figures/Screen%20Shot%202019-02-26%20at%208.30.56%20PM.png)
